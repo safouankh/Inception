@@ -1,0 +1,12 @@
+FROM debian:12
+
+RUN apt-get update && apt-get install -y \
+    nginx \
+    openssl
+
+COPY conf/nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY tools/script.sh /script.sh
+
+RUN chmod 777 script.sh
+
+ENTRYPOINT ["./script.sh"]

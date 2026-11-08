@@ -1,0 +1,74 @@
+services:
+  nginx:
+    build: ./requirements/nginx/
+    image: nginx
+    container_name: nginx
+    env_file:
+      - .env
+    ports:
+      - "443:443"
+    networks:
+      - inception
+    volumes:
+      - wordpress:/var/www/html
+    depends_on:
+      - wordpress
+    restart: unless-stopped
+  wordpress:
+    container_name: wordpress
+    build: ./requirements/wordpress/
+    image: wordpress
+    env_file:
+      - .env
+    secrets:
+      - db_pwd
+      - admin_pwd
+      - user_pwd
+    networks:
+      - inception
+    volumes:
+      - wordpress:/var/www/html
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb/
+    image: mariadb
+    env_file:
+      - .env
+    secrets:
+      - db_pwd
+    networks:
+      - inception
+    volumes:
+      - mariadb_db:/var/lib/mysql
+    restart: unless-stopped
+
+secrets:
+  db_pwd:
+    file: ../secrets/db_pwd
+  admin_pwd:
+    file: ../secrets/admin_pwd
+  user_pwd:
+    file: ../secrets/user_pwd
+
+networks:
+  inception:
+    name: inception
+
+volumes:
+  mariadb_db:
+    name: mariadb_db
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/sael-kha/data/mariadb
+  wordpress:
+    name: wordpress
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/sael-kha/data/wordpress
